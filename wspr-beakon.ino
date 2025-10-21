@@ -27,7 +27,7 @@
 #define WSPR_TX_EVERY 4    // Transmit every x minutes
 
 // SI5351 drive strength options: SI5351_DRIVE_2MA, SI5351_DRIVE_4MA, SI5351_DRIVE_6MA, SI5351_DRIVE_8MA
-// Tested values 2MA = 0.6 mW, 4MA = 2.5 mW, 6MA = 5 mW, 8MA = 10 mW
+// Tested values 2mA = 1mW, 4mA = 2mW, 6mA = 5mW, 8mA = 10mW
 #define SI5351_DRIVE_LEVEL SI5351_DRIVE_4MA
 
 // WiFi networks configuration
@@ -53,27 +53,28 @@ const struct
 
   // For filters controlled with the integrated UDN2981
   // we are going to use ESP32 pins 12, 14, 27, 26, 25, 33, 32
+  // Filter pins set to 0 are ignored (no filter control)
 
   // All frecuencies in this chart are calculated for our radio module
   // You need to calculate your own. Every radio module has a different crystal.
 
 } wsprFrequencies[] = {
   // Frequency(Hz), Crystal_Freq(Hz), Label, Relay_Pin
-  {144489000UL, 25000000UL, "144.489 MHz 2m",  32},
-  {70105048UL,  25000000UL, "70.091 MHz 4m",   32},
-  {50303500UL,  25000000UL, "50.293 MHz 6m",   32},
-  {28131120UL,  25000000UL, "28.124 MHz 10m",  33},
-  {24924600UL,  25000000UL, "24.924 MHz 12m",  33},
-  {21099330UL,  25000000UL, "21.094 MHz 15m",  25},
-  {18104600UL,  25000000UL, "18.104 MHz 17m",  25},
-  {14099615UL,  25000000UL, "14.095 MHz 20m",  26},
-  {10142033UL,  25000000UL, "10.138 MHz 30m",  27},
-  {7041356UL,   25000000UL, "7.038 MHz 40m",   27},
-  {5287200UL,   25000000UL, "5.287 MHz 60m",   14},
-  {3570732UL,   25000000UL, "3.568 MHz 80m",   14},
-  {1838426UL,   25000000UL, "1.836 MHz 160m",  12},
-  {475786UL,    25000000UL, "0.474 MHz 630m",  32},
-  {136000UL,    25000000UL, "0.136 MHz 2200m", 32}
+  {144489000UL, 25000000UL, "144.489 MHz 2m",  0},    // 2m band (not supported by the Si5351)
+  {70105048UL,  25000000UL, "70.091 MHz 4m",   0},    // 4m band (not supported by the Si5351)
+  {50303500UL,  25000000UL, "50.293 MHz 6m",   0},    // 6m band (not supported by the Si5351)
+  {28131120UL,  25000000UL, "28.124 MHz 10m",  12},   // 10m band
+  {24924600UL,  25000000UL, "24.924 MHz 12m",  12},   // 12m band
+  {21099330UL,  25000000UL, "21.094 MHz 15m",  14},   // 15m band
+  {18104600UL,  25000000UL, "18.104 MHz 17m",  14},   // 17m band
+  {14099615UL,  25000000UL, "14.095 MHz 20m",  27},   // 20m band
+  {10142033UL,  25000000UL, "10.138 MHz 30m",  27},   // 30m band
+  {7041356UL,   25000000UL, "7.038 MHz 40m",   26},   // 40m band
+  {5287200UL,   25000000UL, "5.287 MHz 60m",   26},   // 60m band
+  {3570732UL,   25000000UL, "3.568 MHz 80m",   25},   // 80m band
+  {1838426UL,   25000000UL, "1.836 MHz 160m",  33},   // 160m band
+  {475786UL,    25000000UL, "0.474 MHz 630m",  32},   // 630m band
+  {136000UL,    25000000UL, "0.136 MHz 2200m", 32}    // 2200m band
 };
 
 //******************************************************************
