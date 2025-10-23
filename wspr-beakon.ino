@@ -931,8 +931,8 @@ void loop()
     lcd.print("Time not synced");
   }
 
-  // Verificar y re-sincronizar la hora cada 60 segundos
-  checkAndSyncTime(60);
+  // Verificar y re-sincronizar la hora cada 30 minutos (1800 segundos)
+  checkAndSyncTime(1800);
 
 }
  
