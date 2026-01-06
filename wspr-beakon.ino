@@ -21,10 +21,11 @@
 #define DEVMODE // Serial port debug
 
 // WSPR transmitter configuration
-#define WSPR_CALL "EA1REX" // 4-6 digit callsign
-#define WSPR_LOC "IN53"    // 4 digit locator  
-#define WSPR_DBM 20        // WSPR TX power
-#define WSPR_TX_EVERY 4    // Transmit every x minutes
+#define WSPR_CALL "EA1REX"       // 4-6 digit callsign
+#define WSPR_LOC "IN53"          // 4 digit locator  
+#define WSPR_DBM 20              // WSPR TX power
+#define WSPR_TX_EVERY 4          // Transmit every x minutes
+#define WSPR_AUTO_ROTATION false // Set to true to auto rotate frequencies after each transmission
 
 // SI5351 drive strength options: SI5351_DRIVE_2MA, SI5351_DRIVE_4MA, SI5351_DRIVE_6MA, SI5351_DRIVE_8MA
 // Tested values 2mA = 1mW, 4mA = 2mW, 6mA = 5mW, 8mA = 10mW
@@ -396,6 +397,31 @@ void updateScrollMessage(){
   // Actualizar el mensaje a desplazar
   messageToScroll = String(WSPR_CALL) + " " + String(WSPR_LOC) + " " + String(label) + " " + String(WSPR_DBM) + "dBm TX every " + String(WSPR_TX_EVERY) + "min";
 }
+
+/**
+ * @brief Change to the next frequency in the list.
+ *
+ * This function updates the selected frequency index and associated variables,
+ * and saves the new selection.
+ */
+void rotateToNextFrequency() {
+  // Go to the next frequency in the list
+  selectedIndex = (selectedIndex + 1) % numFrequencies;
+  
+  // Update frequency variables
+  selectedFreq        = wsprFrequencies[selectedIndex].freq;
+  selectedCrystalFreq = wsprFrequencies[selectedIndex].crystalFreq;
+  selectedFilter      = wsprFrequencies[selectedIndex].filterPin;
+
+  #if defined(DEVMODE)
+    Serial.println("Auto-rotation: Switching to next frequency");
+    Serial.print("New frequency: ");
+    Serial.println(wsprFrequencies[selectedIndex].label);
+  #endif
+
+  // Save the new frequency selection
+  storeFrequency(selectedFreq, selectedCrystalFreq, selectedFilter);
+}
  
 /**
 * @brief Intenta sincronizar la hora usando NTP (Network Time Protocol).
@@ -679,6 +705,11 @@ void transmitWSPRMessage()
   #endif
 
   lcd.clear();
+
+  // if automatic frequency rotation is enabled, rotate to next frequency
+  if (WSPR_AUTO_ROTATION) {
+    rotateToNextFrequency();
+  }
 }
  
 bool ssidConnect()
