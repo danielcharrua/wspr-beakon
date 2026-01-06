@@ -23,7 +23,7 @@ All usage instructions, assembly guides, configuration, and technical details ar
 
 ## Credits
 
-- **EB1A (Javier)** - RF engineering, hardware design, PCB development, and project photography
+- **EB1A (Javier)** - RF testing, hardware design, printed circuit board development, and project photography
 - **EA1REX (Daniel)** - Software development, firmware implementation, hardware design, and PCB development
 
 ## License
