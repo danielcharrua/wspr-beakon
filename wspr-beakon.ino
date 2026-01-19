@@ -119,6 +119,15 @@ Si5351 si5351;
 JTEncode jtencode;
 
 //******************************************************************
+//                    TX CONTROL PIN CONFIGURATION
+//******************************************************************
+
+// TX control pin (activates 1s before warmup, deactivates 1s after TX)
+#define TX_CONTROL_PIN 13
+bool txControlActive = false; // TX control pin status flag
+unsigned long txEndTime = 0;  // Time when transmission ended
+
+//******************************************************************
 //                         Rotary encoder
 //******************************************************************
 
@@ -200,6 +209,44 @@ void setFilterPins()
  
   #if defined(DEVMODE)
     Serial.println("Setup filter pins");
+  #endif
+}
+
+void setupTXControlPin()
+{
+  // Configure TX control pin as output and set to LOW
+  pinMode(TX_CONTROL_PIN, OUTPUT);
+  digitalWrite(TX_CONTROL_PIN, LOW);
+  
+  #if defined(DEVMODE)
+    Serial.println("TX Control Pin initialized as LOW");
+  #endif
+}
+
+void updateTXControlPin()
+{
+  // Non-blocking deactivation: wait 1s after transmission ends (txEndTime)
+  // This keeps the TX control pin HIGH during: warmup (30s) + transmission (~110s) + 1s after
+  if (txControlActive && txEndTime > 0 && millis() - txEndTime >= 1000)
+  {
+    digitalWrite(TX_CONTROL_PIN, LOW);
+    txControlActive = false;
+    txEndTime = 0;
+    
+    #if defined(DEVMODE)
+      Serial.println("TX Control Pin set to LOW");
+    #endif
+  }
+}
+
+void activateTXControlPin()
+{
+  // Activate TX control pin 1s before warmup starts
+  digitalWrite(TX_CONTROL_PIN, HIGH);
+  txControlActive = true;
+  
+  #if defined(DEVMODE)
+    Serial.println("TX Control Pin set to HIGH (1s before warmup)");
   #endif
 }
  
@@ -705,6 +752,10 @@ void transmitWSPRMessage()
     Serial.println("TX OFF - End of transmission");
   #endif
 
+  // Save transmission end time for TX control pin deactivation
+  // The pin will be deactivated 1s later by updateTXControlPin() in loop()
+  txEndTime = millis();
+
   lcd.clear();
 
   // if automatic frequency rotation is enabled, rotate to next frequency
@@ -849,6 +900,9 @@ void setup()
   // Set filter pins as outputs
   setFilterPins();
 
+  // Setup TX control pin
+  setupTXControlPin();
+
   // Cargar frecuencia almacenada
   loadStoredFrequency();
 
@@ -932,6 +986,9 @@ void setup()
 void loop()
 {
 
+  // Update TX control pin state (non-blocking)
+  updateTXControlPin();
+
   // Actualizar el scroll de texto en el LCD
   updateScrollText();
 
@@ -943,6 +1000,12 @@ void loop()
 
     // Mostrar el countdown en el LCD para la próxima transmisión
     updateTXCountdown();
+
+    // 31 seconds before TX activate TX control pin (1s before warmup)
+    if ((minute() + 1) % WSPR_TX_EVERY == 0 && second() == 29 && !txControlActive)
+    {
+      activateTXControlPin();
+    }
 
     // 30 seconds before TX enable SI5351 output to eliminate startup drift
     if ((minute() + 1) % WSPR_TX_EVERY == 0 && second() == 30 && !warmup)
